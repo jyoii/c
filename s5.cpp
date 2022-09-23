@@ -2,10 +2,14 @@
 using namespace std;
 
 vector<vector<int>> tree(200000);
+
 char choice[200000];
 int cost[200000];
-
+int dp[200000][3];       //dp[i][0]: solution of subtree with root i when there is no influence between i and its parent
+                        //dp[i][1]: solution of subtree with root i when i is influenced by its parent
+                        //dp[i][2]: solution of subtree with root i when i influences its parent
 //The function below returns the minimum cost of subtree with root 'u' and state 'state'
+
 //u: current node
 //state: 0 - there is no influence between u and its parent
 //       1 - u is influenced by its parent
@@ -17,21 +21,28 @@ int minCost(int u, int state, int parent){
     //if dp[u][state] already exists, it means this has been computed before, just return its result
     if (dp[u][state] != INT_MAX){
         return dp[u][state];
-    }
+    }                                                   
 
     if(state == 0){
     //compute and return the minimal cost of subtree with root 'u' when there is no influence between u and its parent
-    
-        if(cost[u] == 'Y'){
-            total += cost[u];
+
+        
+        int c1 = 0, c2 = 0;
+        if(choice[u] != 'Y'){
+            //option1: pay 'u', which means u will influence all its children
+            c1 += cost[u] + total;
+            int op1[200000];
+            copy(choice, choice+200000, op1); 
             for (int i = 0; i < tree[u].size(); i++){
-                int op1[200000];
-                copy(choice, choice+200000, op1); 
                 op1[tree[u][i]] = 'Y';
             }
-            //option1: pay 'u', which means u will influence all its children
+        
             //option2: don't pay 'u', which means there will be no influences between 'u' and any of its children
-            //minimum cost = min(option1, option2)
+            c2 += total;
+
+            if (c1 < c2) choice[u] = 'Y';
+            total += min(c1, c2);
+            //return min(c1, c2);
         }
   
         else{
@@ -80,8 +91,5 @@ int main() {
         cost[i] = tmp;
     }
   
-    int dp[N][3];   //dp[i][0]: solution of subtree with root i when there is no influence between i and its parent
-                    //dp[i][1]: solution of subtree with root i when i is influenced by its parent
-                    //dp[i][2]: solution of subtree with root i when i influences its parent
     fill_n(&dp[N][3], N*3, INT_MAX);
 }
